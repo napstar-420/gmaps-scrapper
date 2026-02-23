@@ -27,7 +27,7 @@ export default function main(port: number = config.port) {
 
     if (isCLI) {
         server.listen(port)
-        logger.info('Listening on port %d', port)
+        logger.info('Listening on http://localhost:%d', port)
     }
 
     return server
