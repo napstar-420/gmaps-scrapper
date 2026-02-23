@@ -7,6 +7,7 @@ import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { config } from './config.js'
 import { sampleRouter } from './routes/sample.routes.js'
+import { logger } from './logger.js'
 
 const nodePath = resolve(process.argv[1])
 const modulePath = resolve(fileURLToPath(import.meta.url))
@@ -26,8 +27,7 @@ export default function main(port: number = config.port) {
 
     if (isCLI) {
         server.listen(port)
-        // eslint-disable-next-line no-console
-        console.log(`Listening on port: ${port}`)
+        logger.info('Listening on port %d', port)
     }
 
     return server

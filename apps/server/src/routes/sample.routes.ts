@@ -5,4 +5,3 @@ import { getSample } from '../controllers/sample.controller.js'
 export const sampleRouter: ExpressRouter = Router()
 
 sampleRouter.get('/sample', getSample)
-
