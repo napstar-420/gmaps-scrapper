@@ -1,17 +1,18 @@
 import { Outlet } from "react-router";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SiteHeader } from "@/components/site-header";
 
 export default function Layout() {
     return (
         <TooltipProvider>
             <SidebarProvider>
-                <AppSidebar />
-                <main>
-                    <SidebarTrigger />
+                <AppSidebar variant="inset" />
+                <SidebarInset>
+                    <SiteHeader />
                     <Outlet />
-                </main>
+                </SidebarInset>
             </SidebarProvider>
         </TooltipProvider>
     );
