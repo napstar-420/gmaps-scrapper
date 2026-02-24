@@ -6,7 +6,7 @@ import { createServer } from 'http'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { config } from './config.js'
-import { sampleRouter } from './routes/sample.routes.js'
+import { apiRouter } from './routes/api.routes.js'
 import { logger } from './logger.js'
 
 const nodePath = resolve(process.argv[1])
@@ -21,7 +21,7 @@ export default function main(port: number = config.port) {
         response.status(200).send('Olá, Hola, Hello!')
     })
 
-    app.use('/api', sampleRouter)
+    app.use('/api', apiRouter)
 
     const server = createServer(app)
 
