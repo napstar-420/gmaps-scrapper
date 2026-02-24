@@ -1,3 +1,5 @@
+import type React from "react";
+import { Link } from "react-router";
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -5,14 +7,13 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type React from "react";
 
 export function NavMain({
     items,
 }: {
     items: {
         title: string;
-        url: string;
+        path: string;
         icon?: React.ElementType;
     }[];
 }) {
@@ -21,12 +22,14 @@ export function NavMain({
             <SidebarGroupContent className="flex flex-col gap-2">
                 <SidebarMenu>
                     {items.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton tooltip={item.title}>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <Link to={item.path} key={item.title}>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton tooltip={item.title}>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </Link>
                     ))}
                 </SidebarMenu>
             </SidebarGroupContent>

@@ -1,10 +1,22 @@
 import { createBrowserRouter } from "react-router";
-import AppLayout from '@/layouts/app-layout';
-
+import { routes } from "@/config";
+import AppLayout from "@/layouts/app-layout";
+import ScrapePage from "./pages/Scrape";
+import RecordsPage from "./pages/Records";
 
 export const router = createBrowserRouter([
     {
-        path: "/",
+        path: routes.root.path,
         Component: AppLayout,
+        children: [
+            {
+                index: true,
+                Component: ScrapePage,
+            },
+            {
+                path: routes.records.path,
+                Component: RecordsPage,
+            },
+        ],
     },
 ]);

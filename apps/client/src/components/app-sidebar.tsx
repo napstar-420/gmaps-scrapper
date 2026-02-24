@@ -21,12 +21,12 @@ const data = {
     navMain: [
         {
             title: "Scrape",
-            url: "#",
+            path: "/",
             icon: FastForwardIcon,
         },
         {
             title: "Records",
-            url: "#",
+            path: "/records",
             icon: DatabaseIcon,
         },
     ],
