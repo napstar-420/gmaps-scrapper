@@ -5,6 +5,7 @@ import express, { Request, Response } from 'express'
 import { createServer } from 'http'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
+import morgan from 'morgan'
 import { config } from './config.js'
 import { apiRouter } from './routes/api.routes.js'
 import { logger } from './logger.js'
@@ -15,6 +16,8 @@ const isCLI = nodePath === modulePath
 
 export default function main(port: number = config.port) {
     const app = express()
+
+    app.use(morgan('dev'))
 
     app.get('/', (_request: Request, response: Response) => {
         response.type('text/plain;charset=utf8')
