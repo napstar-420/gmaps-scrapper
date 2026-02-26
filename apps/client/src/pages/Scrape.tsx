@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export default function ScrapePage() {
     const [query, setQuery] = useState("");
 
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (query.length < 5) {
@@ -19,7 +19,20 @@ export default function ScrapePage() {
             return;
         }
 
-        console.log(query);
+        const response = await fetch("/api/start", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query }),
+        });
+
+        if (!response.ok) {
+            toast.error("Failed to start scraping");
+            return;
+        }
+
+        toast.success("Scraping started");
     };
 
     return (
