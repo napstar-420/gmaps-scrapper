@@ -18,6 +18,7 @@ export default function main(port: number = config.port) {
     const app = express()
 
     app.use(morgan('dev'))
+    app.use(express.json())
 
     app.get('/', (_request: Request, response: Response) => {
         response.type('text/plain;charset=utf8')
