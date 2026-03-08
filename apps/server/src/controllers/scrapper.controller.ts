@@ -21,8 +21,8 @@ export async function startScraping(req: Request, res: Response): Promise<void> 
     }
 
     try {
-        await scrapperService.scrape(query)
-        res.sendStatus(200)
+        const places = await scrapperService.scrape(query)
+        res.status(200).json({ query, count: places.length, places })
     } catch (error) {
         logger.error('Error starting scraping', error)
         res.status(500).json({ error: 'Failed to start scraping' })
