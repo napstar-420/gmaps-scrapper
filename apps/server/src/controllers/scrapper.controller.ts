@@ -1,9 +1,11 @@
 import type { Request, Response } from 'express'
-import { scrapperService } from '../services/scrapper.service.js'
 import { logger } from '../logger.js'
+import { normalizeQuery } from '../utils/index.js'
+import { inngest } from '../inngest/index.js'
+import { INNGEST_EVENTS } from '../constants/index.js'
 
 export async function startScraping(req: Request, res: Response): Promise<void> {
-    const query = req.body?.query
+    const query = normalizeQuery(req.body?.query)
 
     if (!query) {
         res.status(400).json({ error: 'Query is required' })
@@ -21,8 +23,12 @@ export async function startScraping(req: Request, res: Response): Promise<void> 
     }
 
     try {
-        const places = await scrapperService.scrape(query)
-        res.status(200).json({ query, count: places.length, places })
+        await inngest.send({
+            name: INNGEST_EVENTS.SCRAPE_START,
+            data: { query },
+        })
+        res.status(200).json({ message: 'Scraping started' })
+        return
     } catch (error) {
         logger.error('Error starting scraping', error)
         res.status(500).json({ error: 'Failed to start scraping' })

@@ -6,7 +6,9 @@ import { createServer } from 'http'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import morgan from 'morgan'
+import { serve } from 'inngest/express'
 import { config } from './config.js'
+import { inngest, functions } from './inngest/index.js'
 import { apiRouter } from './routes/api.routes.js'
 import { logger } from './logger.js'
 
@@ -25,6 +27,7 @@ export default function main(port: number = config.port) {
         response.status(200).send('Olá, Hola, Hello!')
     })
 
+    app.use('/api/inngest', serve({ client: inngest, functions }))
     app.use('/api', apiRouter)
 
     const server = createServer(app)
