@@ -1,17 +1,9 @@
 import puppeteer, { Browser, Page } from 'puppeteer'
 import { logger } from '../logger.js'
-import { sleep } from '../utils/index.js'
+import { sanitizeText, sleep } from '../utils/index.js'
+import type { Place } from 'src/db/schema.js'
 
-export interface ScrapedPlace {
-    name: string
-    address: string | null
-    link: string
-    rating: number | null
-    reviewCount: number | null
-    phone: string | null
-    email: string | null
-    zipCode: string | null
-}
+type ScrapedPlace = Omit<Place, 'id' | 'createdAt' | 'updatedAt'>
 
 /** Delay after initial page load before starting to scroll (ms). */
 const INITIAL_LOAD_DELAY_MS: number = 3000
@@ -145,13 +137,13 @@ export class ScrapperService {
             const titleEl = document.querySelector('.DUwDvf')
             if (titleEl) name = trim(titleEl.textContent) ?? name
 
-            let rating: number | null = null
+            let rating: string | null = null
             let reviewCount: number | null = null
             const ratingBlock = document.querySelector('.F7nice')
             if (ratingBlock) {
                 const text = ratingBlock.textContent ?? ''
                 const ratingMatch = text.match(/(\d+[.,]\d+)/)
-                if (ratingMatch) rating = parseFloat(ratingMatch[1].replace(',', '.'))
+                if (ratingMatch) rating = ratingMatch[1].replace(',', '.')
                 const countMatch = text.match(/\(([\d,]+)/)
                 if (countMatch) reviewCount = parseInt(countMatch[1].replace(/,/g, ''), 10)
             }
@@ -202,10 +194,20 @@ export class ScrapperService {
                 zipCode,
             }
         })
-        return {
-            ...partial,
+
+        const cleaned = {
+            name: sanitizeText(partial.name) ?? partial.name,
+            address: sanitizeText(partial.address) ?? partial.address,
+            rating: partial.rating,
+            reviewCount: partial.reviewCount,
+            phone: sanitizeText(partial.phone) ?? partial.phone,
+            email: sanitizeText(partial.email) ?? partial.email,
+            zipCode: sanitizeText(partial.zipCode) ?? partial.zipCode,
             link: placeLink,
         }
+        logger.debug('Place (cleaned): %j', cleaned)
+
+        return cleaned
     }
 
     /**

@@ -1,0 +1,1 @@
+ALTER TABLE "place" ALTER COLUMN "rating" SET DATA TYPE numeric(2, 1);
