@@ -131,11 +131,9 @@ export class ScrapperService {
      */
     private async extractPlaceFromPanel(page: Page, placeLink: string): Promise<ScrapedPlace> {
         const partial = await page.evaluate(() => {
-            const trim = (s: string | null | undefined) => s?.trim() || null
-
             let name: string = 'Unknown'
             const titleEl = document.querySelector('.DUwDvf')
-            if (titleEl) name = trim(titleEl.textContent) ?? name
+            if (titleEl) name = titleEl.textContent?.trim() || name
 
             let rating: string | null = null
             let reviewCount: number | null = null
@@ -150,30 +148,37 @@ export class ScrapperService {
 
             let address: string | null = null
             const addressBtn = document.querySelector('button[data-item-id="address"], [data-item-id="address"]')
-            address = trim(addressBtn?.textContent)
+            address = addressBtn?.textContent?.trim() || null
 
             let phone: string | null = null
             const telLink = document.querySelector<HTMLAnchorElement>('a[href^="tel:"]')
             if (telLink) {
-                phone = trim(telLink.getAttribute('href')?.replace(/^tel:/i, '')) ?? trim(telLink.textContent)
+                phone =
+                    telLink.getAttribute('href')?.replace(/^tel:/i, '')?.trim() || telLink.textContent?.trim() || null
             }
             if (!phone) {
                 const copyPhone = document.querySelector(
                     'button[data-tooltip="Copy phone number"], button[data-item-id="phone:tel"], [data-item-id="phone:tel"]',
                 )
-                phone = trim(copyPhone?.textContent)
+                phone = copyPhone?.textContent?.trim() || null
             }
 
             let email: string | null = null
             const mailLink = document.querySelector<HTMLAnchorElement>('a[href^="mailto:"]')
             if (mailLink) {
-                email = trim(mailLink.getAttribute('href')?.replace(/^mailto:/i, '')) ?? trim(mailLink.textContent)
+                email =
+                    mailLink
+                        .getAttribute('href')
+                        ?.replace(/^mailto:/i, '')
+                        ?.trim() ||
+                    mailLink.textContent?.trim() ||
+                    null
             }
             if (!email) {
                 const copyEmail = document.querySelector(
                     'button[data-tooltip="Copy email"], button[data-item-id="email"], [data-item-id="email"]',
                 )
-                email = trim(copyEmail?.textContent)
+                email = copyEmail?.textContent?.trim() || null
             }
 
             let zipCode: string | null = null

@@ -36,6 +36,20 @@ export const scrape = inngest.createFunction(
             }
         })
 
+        if (scrapedPlaces.length === 0) {
+            await updateQuery(queryId, {
+                status: 'completed',
+                endedAt: new Date(),
+            })
+
+            return {
+                status: 'skipped',
+                reason: 'no places found',
+                timestamp: new Date(),
+                queryId,
+            }
+        }
+
         const places = await step.run('create-places', async () => {
             return await createManyPlaces(scrapedPlaces)
         })

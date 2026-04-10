@@ -4,5 +4,6 @@ packages:
 onlyBuiltDependencies:
   - esbuild
   - msw
+  - protobufjs
   - puppeteer
   - unrs-resolver
