@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import puppeteer, { Browser, Page } from 'puppeteer'
 import { logger } from '../logger.js'
 import { sanitizeText, sleep } from '../utils/index.js'
@@ -5,6 +6,15 @@ import type { Place } from 'src/db/schema.js'
 
 type ScrapedPlace = Omit<Place, 'id' | 'createdAt' | 'updatedAt'>
 
+/** In-memory snapshot of a scrape currently in progress (for realtime status). */
+export type ActiveScrapeJob = {
+    id: string
+    query: string
+    startedAt: Date
+}
+
+/** When the last active scrape ends, close the browser after this delay (ms). */
+const BROWSER_IDLE_CLOSE_MS = 60_000
 /** Delay after initial page load before starting to scroll (ms). */
 const INITIAL_LOAD_DELAY_MS: number = 3000
 /** Delay between each scroll to avoid rate limits and allow content to load (ms). */
@@ -37,6 +47,47 @@ const SCROLLABLE_SELECTORS = [
 
 export class ScrapperService {
     private browserInstance: Browser | null = null
+    private activeJobs = new Map<string, ActiveScrapeJob>()
+    private activeScrapeCount = 0
+    private idleCloseTimer: ReturnType<typeof setTimeout> | null = null
+
+    /** Snapshot of active scrapes (copies; safe to expose to callers). */
+    public getActiveScrapes(): ReadonlyArray<ActiveScrapeJob> {
+        return [...this.activeJobs.values()].map(j => ({
+            id: j.id,
+            query: j.query,
+            startedAt: new Date(j.startedAt.getTime()),
+        }))
+    }
+
+    private clearIdleCloseTimer(): void {
+        if (this.idleCloseTimer) {
+            clearTimeout(this.idleCloseTimer)
+            this.idleCloseTimer = null
+        }
+    }
+
+    /** Schedules browser close after idle debounce; clears any previous idle timer. */
+    private scheduleIdleBrowserClose(): void {
+        this.clearIdleCloseTimer()
+        this.idleCloseTimer = setTimeout(() => {
+            this.idleCloseTimer = null
+            void this.closeBrowserWhenIdle()
+        }, BROWSER_IDLE_CLOSE_MS)
+    }
+
+    private async closeBrowserWhenIdle(): Promise<void> {
+        if (this.activeScrapeCount !== 0) return
+        const browser = this.browserInstance
+        if (!browser) return
+        this.browserInstance = null
+        try {
+            await browser.close()
+            logger.info('Browser closed after idle debounce')
+        } catch (error) {
+            logger.error('Error closing browser after idle', error)
+        }
+    }
 
     // Returns browser if it's already launched
     // Else creates a new browser and returns it
@@ -53,10 +104,11 @@ export class ScrapperService {
             this.browserInstance = null
         }
 
-        logger.info('Creating new browser instance')
+        const headless = process.env.NODE_ENV !== 'development'
+        logger.info('Creating new browser instance', { headless })
         try {
             this.browserInstance = await puppeteer.launch({
-                headless: false,
+                headless,
                 args: ['--no-sandbox'],
                 defaultViewport: { width: 1920, height: 1080 },
                 waitForInitialPage: true,
@@ -334,9 +386,16 @@ export class ScrapperService {
     }
 
     public async scrape(query: string): Promise<ScrapedPlace[]> {
+        const scrapeId = randomUUID()
+        this.clearIdleCloseTimer()
+        this.activeScrapeCount += 1
+        const job: ActiveScrapeJob = { id: scrapeId, query, startedAt: new Date() }
+        this.activeJobs.set(scrapeId, job)
+
+        let page: Page | undefined
         try {
             const browser = await this.getBrowser()
-            const page = await browser.newPage()
+            page = await browser.newPage()
 
             await page.goto(`https://www.google.com/maps/search/${encodeURIComponent(query)}?gl=us`, {
                 waitUntil: 'domcontentloaded',
@@ -359,11 +418,21 @@ export class ScrapperService {
             const places = await this.scrapePlacesFromPanels(page, placeLinks)
 
             logger.info(`Scraped ${places.length} places for query: ${query}`)
-            await page.close()
             return places
         } catch (error) {
             logger.error('Error scraping', error)
             throw error
+        } finally {
+            try {
+                await page?.close()
+            } catch (closeErr) {
+                logger.warn('Error closing page', closeErr)
+            }
+            this.activeJobs.delete(scrapeId)
+            this.activeScrapeCount -= 1
+            if (this.activeScrapeCount === 0) {
+                this.scheduleIdleBrowserClose()
+            }
         }
     }
 }
