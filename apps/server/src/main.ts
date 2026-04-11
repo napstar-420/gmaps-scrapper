@@ -11,6 +11,7 @@ import { config } from './config.js'
 import { inngest, functions } from './inngest/index.js'
 import { apiRouter } from './routes/api.routes.js'
 import { logger } from './logger.js'
+import { socketService } from './services/socket.service.js'
 
 const nodePath = resolve(process.argv[1])
 const modulePath = resolve(fileURLToPath(import.meta.url))
@@ -31,6 +32,7 @@ export default function main(port: number = config.port) {
     app.use('/api', apiRouter)
 
     const server = createServer(app)
+    socketService.init(server)
 
     if (isCLI) {
         server.listen(port)

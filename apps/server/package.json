@@ -23,6 +23,7 @@
     "morgan": "^1.10.1",
     "postgres": "^3.4.8",
     "puppeteer": "^24.37.5",
+    "socket.io": "^4.8.3",
     "tslib": "^2.3.1",
     "winston": "^3.19.0"
   },
