@@ -3,8 +3,10 @@ import { logger } from '../logger.js'
 import { normalizeQuery } from '../utils/index.js'
 import { inngest } from '../inngest/index.js'
 import { INNGEST_EVENTS } from '../constants/index.js'
+import { getIpAddress } from 'src/utils/ip-utils.js'
 
 export async function startScraping(req: Request, res: Response): Promise<void> {
+    const ipAddress = getIpAddress(req) ?? '127.0.0.1'
     const query = normalizeQuery(req.body?.query)
 
     if (!query) {
@@ -25,7 +27,7 @@ export async function startScraping(req: Request, res: Response): Promise<void> 
     try {
         await inngest.send({
             name: INNGEST_EVENTS.SCRAPE_START,
-            data: { query },
+            data: { query, ipAddress },
         })
         res.status(200).json({ message: 'Scraping started' })
         return
