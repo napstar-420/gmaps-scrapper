@@ -16,6 +16,7 @@
     "format:check": "prettier \"./**\" --ignore-unknown --check"
   },
   "dependencies": {
+    "@google/genai": "^1.49.0",
     "dotenv": "^16.0.0",
     "drizzle-orm": "^0.45.1",
     "envalid": "^8.1.1",
