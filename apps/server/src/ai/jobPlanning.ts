@@ -21,7 +21,7 @@ Return a JSON object with this exact shape:
       "name": string,        // human-readable city name
       "lat": number,         // city center latitude
       "lng": number,         // city center longitude
-      "radius_meters": number // suggested initial search radius (typically 8000–25000 depending on city size)
+      "radius_meters": number // small focused search radius, typically 1500–5000 meters, so Maps can surface most businesses in that area
     }
   ]
 }
@@ -30,7 +30,9 @@ Rules:
 - queries should be varied and fine-tuned for Maps — include the base term, category synonyms, and local language variants if relevant
 - If a city was specified above, return only that one city in the cities array (exactly one entry)
 - If no city was specified, return the complete list of cities you recommend scraping for this query in this country — include every urban area that should be covered; there is no minimum or maximum number of cities, use your judgment (aim for broad geographic spread and major population centers where relevant)
-- radius_meters should reflect urban density — large sprawling cities get larger radius, small cities get smaller
+- radius_meters should be small and focused so Google Maps can show most businesses in that area
+- Use 1500–3000 meters for dense urban areas and 3000–5000 meters for sparse or suburban areas
+- Do not return broad city-wide radii; coverage will be expanded later by getNextArea
 - Return only the JSON object, nothing else`
 }
 

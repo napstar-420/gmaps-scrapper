@@ -43,7 +43,9 @@ Return a JSON object:
 Rules:
 - Choose an area that doesn't significantly overlap with already-scraped areas
 - Stay within or near the city's overall bounding radius
-- Shrink radius_meters for dense urban cores, increase for sparse suburban/rural outskirts
+- Prefer small focused radii so Google Maps can show most businesses in the selected area
+- Use 1000–2500 meters in dense urban cores and 2500–5000 meters in sparse suburban/rural outskirts
+- Do not choose a radius so large that Google Maps may hide, cap, or truncate businesses in that area
 - Return null if: all major areas of the city have been covered, or the last 3 areas returned 0 new records
 - The reasoning field is required and helps with debugging`
 
